@@ -1,0 +1,216 @@
+<link rel="stylesheet" href="calculator.css">
+
+<html>
+<head>
+<script type="text/javascript">
+
+	function peak(stack){
+		if(stack.length == 0){
+			return 0;
+		}
+		else{
+			return stack[stack.length - 1];
+		}
+	}
+
+	window.onload = function(e){
+		document.addEventListener('keypress', function(){onKeyPress(String.fromCharCode(event.keyCode))}, false);
+		create();
+	}
+
+	var buttons_array = ['(',')','%','AC','7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'];
+
+	//Stacks and Map
+	var numberStack = [];
+	var operatorStack = [];
+	var map = new Map();
+	map.set('(', '20');
+	map.set(')', '20');
+	map.set('%', '15');
+	map.set('*', '14');
+	map.set('/', '14');
+	map.set('+', '13');
+	map.set('-', '13');
+	map.set('=', '3');
+	
+
+	function createButton(buttons_array){
+		var button_count = 0;
+		for(i=0; i<buttons_array.length; i++){
+
+			val = buttons_array[i];
+			if(button_count % 4 == 0){
+				linebreak  = document.createElement("br");
+				document.body.appendChild(linebreak);
+			}
+			var button = document.createElement("BUTTON");
+			var v = document.createTextNode(val);
+			button.appendChild(v);
+			document.body.appendChild(button);
+			button.setAttribute("id", val);
+			button.setAttribute("value", val);
+			button.addEventListener('click', function(){onKeyPress(event.currentTarget.value)}, false);
+			button_count++;
+			if(isNumber(val) || val == '.' || val == '='){
+				button.setAttribute("class", "buttons lightGreyButtons");
+			}else{
+				button.setAttribute("class", "buttons darkGreyButtons");	
+			}
+			
+		}
+
+		calculatorScreen = document.getElementById('calculatorScreen');
+		
+
+	}
+
+	function isPercentageOperation(){
+		if(document.getElementById('calculatorScreen').includes('%'))
+			return true;
+	}
+
+	function evaluateforPercentage(){
+		evaluate()
+	}
+
+	var flag = false;
+	function onKeyPress(character){
+		var key_pressed = character;
+		
+		if(isNumber(key_pressed)){
+			handleNumberPressed(parseInt(key_pressed));
+		}
+		
+		else if(isOperator(key_pressed)){
+			handleOperatorPressed(key_pressed)
+		}	
+
+		else if(key_pressed == '=' || key_pressed == 'enter'){
+			var expression = document.getElementById('calculatorScreen').innerHTML;
+			if(expression.includes('%')){
+				var a = numberStack.pop();
+				var operation = operatorStack.pop();
+				var b = numberStack.pop();
+				finalOutput = evaluate(a,'%',b);
+				document.getElementById('calculatorScreen').innerHTML = finalOutput;
+			}else{
+				var finalOutput = eval(expression);
+
+				document.getElementById('calculatorScreen').innerHTML = finalOutput;
+			}
+			numberStack.length = 0
+			operatorStack.length = 0
+			numberStack.push(finalOutput)			
+		}
+
+		else if(key_pressed == 'AC'){
+			document.getElementById('calculatorScreen').innerHTML = 0;
+			numberStack.length = 0;
+			operatorStack.length = 0;
+		}
+
+		console.log(numberStack);
+		console.log(operatorStack);
+		console.log(flag)
+		if(key_pressed != '=' && key_pressed != 'AC'){
+			var expression = printOutputOnScreen(numberStack, operatorStack);
+			document.getElementById('calculatorScreen').innerHTML = expression;
+		}	
+
+	}
+
+	function isPreviousCharacterNumber() {
+		return flag
+	}
+
+	function handleNumberPressed(number) {
+		// TODO: handle more than one digit numbers
+		var numString = "";
+		if(!isPreviousCharacterNumber() || numberStack.length == 0) {   	//  if(prev  == operator)
+			numberStack.push(number); 											//		push
+		}
+		else {																//  if(prev == number)
+			num = numberStack.pop();										// 		pop,append,push
+			numString = num.toString() + number.toString();
+			numberStack.push(parseInt(numString))
+		}
+		flag=true
+	}
+
+	function handleOperatorPressed(operator) {
+		flag=false
+		if(operatorStack.length == 0 && operator != '=') {
+			operatorStack.push(operator);
+		}
+		else {
+			var currentOperatorPrecedence = map.get(operator);
+			var peak_op = peak(operatorStack);
+			var peakOperatorPrecedence = map.get(peak_op);	
+			
+			while(currentOperatorPrecedence <= peakOperatorPrecedence){
+				var b = numberStack.pop();
+				var operation = operatorStack.pop();
+				var a = numberStack.pop();
+				var evaluatedValue = evaluate(a,operation,b);
+				numberStack.push(evaluatedValue);
+				if(operatorStack.length == 0) break;
+			}
+
+			operatorStack.push(operator);
+		}		
+		
+	}
+
+	function printOutputOnScreen(numberStack, operatorStack){
+		var expression = '';
+		var longerStack = numberStack.length <= operatorStack.length ? operatorStack.length : numberStack.length
+		for(i=0; i<longerStack; i++){
+			if(numberStack[i] != undefined){
+				expression += numberStack[i];
+			}
+			if(operatorStack[i] != undefined){
+				expression += operatorStack[i];
+			}
+		}
+		return expression;
+	}
+
+	function evaluate(a, operation, b){
+		if(operation == '+')
+			return a+b;
+		else if(operation == '-')
+			return a-b;
+		else if(operation == '*')
+			return a*b;
+		else if(operation == '/')
+			return a/b;
+		else if(operation == '%' && b==undefined){
+			return (a/100);
+		}
+		else if(operation == '%')
+			return ((a/100)*b);
+	}
+
+	function isNumber(key_pressed){
+		return !isNaN(key_pressed);
+	}
+
+	function isOperator(key_pressed){
+		if(key_pressed == '+' || key_pressed == '-' || key_pressed == '*' || key_pressed == '/' || key_pressed == '%' || key_pressed == '(' || key_pressed == ')')
+			return true;
+	}
+
+	function create(){
+		createButton(buttons_array);
+	}
+	
+
+</script>	
+
+</head>
+<body>
+	<div id = 'calculatorScreen' class = "screen">
+		
+	</div>
+</body>
+</html>

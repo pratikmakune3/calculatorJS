@@ -1,0 +1,42 @@
+.screen {
+	height: 45px;
+    width: 322px;
+	margin-bottom: 5px;
+	font-size: xx-large;
+	text-align: end;
+	color: transparent;
+	text-shadow: 0 0 0 black;
+	border: 1px solid #dbdbdb;
+	padding: 10px;
+	border-radius: 2px;
+	outline: none;
+
+
+}
+
+.screen:focus {
+	outline: 1px solid blue;
+}
+
+
+
+.buttons {
+	width: 74px;
+	height: 40px;
+	margin: 2px;
+	font-size: medium;
+	box-shadow: none;
+}
+
+.darkGreyButtons {
+	background-color: #d1d1d1;
+}
+
+.lightGreyButtons {
+	background-color: #f3f3f3;
+}
+
+
+
+
+
