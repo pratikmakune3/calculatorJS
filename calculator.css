@@ -1,6 +1,6 @@
 .screen {
 	height: 45px;
-    width: 322px;
+    width: 290px;
 	margin-bottom: 5px;
 	font-size: xx-large;
 	text-align: end;
@@ -10,6 +10,7 @@
 	padding: 10px;
 	border-radius: 2px;
 	outline: none;
+	overflow-x: auto; 
 
 
 }
