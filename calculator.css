@@ -1,9 +1,11 @@
 .screen {
-	height: 45px;
-    width: 290px;
+	margin-left: auto;
+	margin-right: auto;	
+	margin-top: 40px;
+	min-height: 65px;
+    max-width: 315px;
 	margin-bottom: 5px;
 	font-size: xx-large;
-	text-align: end;
 	color: transparent;
 	text-shadow: 0 0 0 black;
 	border: 1px solid #dbdbdb;
@@ -11,6 +13,7 @@
 	border-radius: 2px;
 	outline: none;
 	overflow-x: auto; 
+	text-align: end
 
 
 }
@@ -19,7 +22,9 @@
 	outline: 1px solid blue;
 }
 
-
+#calculator-action-buttons-wrapper {
+	text-align: center;
+}
 
 .buttons {
 	width: 74px;
