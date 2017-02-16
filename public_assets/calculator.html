@@ -1,0 +1,287 @@
+<html>
+<head>
+<!-- <link rel="stylesheet" href="calculator.css"> -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+	
+	//Returns Top element of Stack
+	function peak(stack){
+		if(stack.length == 0){
+			return 0;
+		}
+		else{
+			return stack[stack.length - 1];
+		}
+	}
+
+	function makeLikeNewCalculator() {
+		document.getElementById('calculatorScreen').innerHTML = 0;
+		numberStack.length = 0;
+		operatorStack.length = 0;
+		numberStack.push(0)
+
+	}
+
+	window.onload = function(e){
+		document.addEventListener('keypress', function(){
+			if(event.keyCode == 13)
+				onKeyPress('enter')
+			else
+				onKeyPress(String.fromCharCode(event.keyCode))
+		}, false);
+		
+		create();
+		//TODO : Handle Parenthesis later
+		document.getElementById('(').style.visibility='hidden';
+		document.getElementById(')').style.visibility='hidden';
+		makeLikeNewCalculator()
+	}
+
+	var buttons_array = ['(',')','%','AC','7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'];
+
+	//Stacks and Map
+	var numberStack = [];
+	var operatorStack = [];
+	var map = new Map();
+	map.set('(', '20');
+	map.set(')', '20');
+	map.set('%', '15');
+	map.set('*', '14');
+	map.set('/', '14');
+	map.set('+', '13');
+	map.set('-', '13');
+	map.set('=', '3');
+	
+
+	function createButton(buttons_array){
+		var button_count = 0;
+
+		var action_buttons_node  = document.getElementById('calculator-action-buttons')
+		for(i=0; i<buttons_array.length; i++){
+
+			val = buttons_array[i];
+			if(button_count % 4 == 0){
+
+				linebreak  = document.createElement("br");
+				action_buttons_node.appendChild(linebreak);
+			}
+			var button = document.createElement("BUTTON");
+			var v = document.createTextNode(val);
+			button.appendChild(v);
+			
+			button.setAttribute("id", val);
+			button.setAttribute("value", val);
+			button.addEventListener('click', function(){onKeyPress(event.currentTarget.value)}, false);
+			button_count++;
+			if(isNumber(val) || val == '.'){
+				button.setAttribute("class", "buttons lightGreyButtons btn btn-default");
+			}else{
+				button.setAttribute("class", "buttons darkGreyButtons btn btn-primary");	
+			}
+			action_buttons_node.appendChild(button);
+		}
+	calculatorScreen = document.getElementById('calculatorScreen');
+	}
+
+	function isPercentageOperation(){
+		if(document.getElementById('calculatorScreen').includes('%'))
+			return true;
+	}
+
+	function evaluateforPercentage(){
+		evaluate()
+	}
+
+	var flag = false;
+	function onKeyPress(character){
+		var key_pressed = character;
+
+		if(isNumber(key_pressed)){
+			if(key_pressed == "."){handleDotPressed()}
+			else{handleNumberPressed(parseFloat(key_pressed));}
+		}
+		
+		else if(isOperator(key_pressed)){
+			handleOperatorPressed(key_pressed)
+		}	
+
+		else if(key_pressed == '=' || key_pressed == 'enter'){
+			var expression = document.getElementById('calculatorScreen').innerHTML;
+			if(expression.includes('%')){
+				var a = parseFloat(numberStack.pop());
+				var operation = operatorStack.pop();
+				var b = parseFloat(numberStack.pop());
+				finalOutput = evaluate(a,'%',b);
+				document.getElementById('calculatorScreen').innerHTML = finalOutput;
+			}else{
+				var finalOutput = eval(expression);
+
+				document.getElementById('calculatorScreen').innerHTML = finalOutput;
+			}
+			numberStack.length = 0
+			operatorStack.length = 0
+			numberStack.push(finalOutput)			
+		}
+
+		else if(key_pressed == 'AC'){
+			makeLikeNewCalculator()
+		}
+
+		console.log(numberStack);
+		console.log(operatorStack);
+		console.log(flag)
+		
+		if(key_pressed != '=' && key_pressed != 'AC'){
+			var expression = printOutputOnScreen(numberStack, operatorStack);
+			document.getElementById('calculatorScreen').innerHTML = expression;
+		}	
+	}
+
+	function isPreviousCharacterNumber() {
+		return flag
+	}
+
+	function isPreviousOperator(){
+		return flag_operator;
+	}
+
+	function handleNumberPressed(number) {
+		// TODO: handle more than one digit numbers
+		var numString = "";
+		if(!isPreviousCharacterNumber() || numberStack.length == 0) {   	//  if(prev  == operator)
+			numberStack.push(number); 											//		push
+		}
+		else {																//  if(prev == number)
+			num = numberStack.pop();										// 		pop,append,push
+			numString = num.toString() + number.toString();
+			numberStack.push((numString))
+		}       
+		flag=true
+		flag_operator = false;
+	}
+
+	function handleDotPressed(){
+		var numString = "";
+		var peak_num = peak(numberStack)
+		if(!isPreviousCharacterNumber() || numberStack.length == 0) {   	
+			numberStack.push("0."); 											
+		}
+		else if(peak_num.toString().includes('.')){
+			numberStack.pop();
+			numberStack.push(peak_num);
+		}
+		else{
+			num = numberStack.pop();										
+			numString = num.toString() + ".";
+			numberStack.push((numString))
+		}
+	}
+
+	var flag_operator = false;
+	function handleOperatorPressed(operator) {
+		flag=false
+		var currentOperatorPrecedence = map.get(operator);
+		var peak_op = peak(operatorStack);
+		var peakOperatorPrecedence = map.get(peak_op);	
+
+		if(operatorStack.length == 0 && operator != '=') {
+			operatorStack.push(operator);
+		}
+
+		else if(isPreviousOperator() && operator == peak_op){
+			operatorStack.pop();
+			operatorStack.push(operator);
+		}
+
+		else {
+			while(currentOperatorPrecedence <= peakOperatorPrecedence){
+				var b = parseFloat(numberStack.pop());
+				var operation = operatorStack.pop();
+				var a = parseFloat(numberStack.pop());
+
+				var evaluatedValue = evaluate(a,operation,b);
+				numberStack.push(evaluatedValue);
+				if(operatorStack.length == 0) break;
+			}
+
+			if((numberStack.length <= operatorStack.length) && peakOperatorPrecedence <= currentOperatorPrecedence){
+				operatorStack.pop();
+				operatorStack.push(operator);
+			}
+			else{
+				operatorStack.push(operator);
+			}
+		}
+		flag_operator = true;	
+	}
+
+	function printOutputOnScreen(numberStack, operatorStack){
+		var expression = '';
+		var longerStack = numberStack.length <= operatorStack.length ? operatorStack.length : numberStack.length
+		for(i=0; i<longerStack; i++){
+			if(numberStack[i] != undefined){
+				expression += numberStack[i];
+			}
+			if(operatorStack[i] != undefined){
+				expression += operatorStack[i];
+			}
+		}
+		if(expression.includes("NaN")){
+			return "Not A Number";
+		}
+		else{
+			return expression;
+		}
+	}
+
+	function evaluate(a, operation, b){
+		if(operation == '+')
+			return a+b;
+		else if(operation == '-')
+			return a-b;
+		else if(operation == '*')
+			return a*b;
+		else if(operation == '/')
+			return a/b;
+		else if(operation == '%' && b==undefined){
+			return (a/100);
+		}
+		else if(operation == '%')
+			return ((a/100)*b);
+	}
+
+	function isNumber(key_pressed){
+		if(key_pressed == '.'){return true;}
+		else{return !isNaN(key_pressed);}
+			
+	}
+
+	function isOperator(key_pressed){
+		if(key_pressed == '+' || key_pressed == '-' || key_pressed == '*' || key_pressed == '/' || key_pressed == '%')
+			return true;
+	}
+
+	function create(){
+		createButton(buttons_array);
+	}
+</script>	
+
+</head>
+<body>
+	<div class='calculator-wrapper'>
+		<div id='calculatorScreen' class="screen"></div>
+		<div id='calculator-action-buttons-wrapper'>
+			<div id='calculator-action-buttons'>
+
+			</div>
+		</div>
+	</div>
+</body>
+</html>
